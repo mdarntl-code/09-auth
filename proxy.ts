@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { parse } from "cookie";
 import { checkSession } from "@/lib/api/serverApi";
 
 const PRIVATE_ROUTES = ["/profile", "/notes"];
@@ -31,13 +30,20 @@ export async function proxy(request: NextRequest) {
           : [setCookieHeader];
 
         cookieArray.forEach((cookieString) => {
-          const parsed = parse(cookieString);
-          const [name, value] = Object.entries(parsed)[0];
+          const parts = cookieString.split(";").map((p) => p.trim());
+          const [nameValue, ...attrParts] = parts;
+          const [name, value] = nameValue.split("=");
 
-          res.cookies.set(name, value as string, {
-            path: parsed.Path || "/",
-            maxAge: parsed["Max-Age"] ? Number(parsed["Max-Age"]) : undefined,
-            httpOnly: parsed.HttpOnly !== undefined || true,
+          const attrs: Record<string, string | boolean> = {};
+          attrParts.forEach((part) => {
+            const [key, val] = part.split("=");
+            attrs[key.toLowerCase()] = val || true;
+          });
+
+          res.cookies.set(name, value, {
+            path: typeof attrs.path === "string" ? attrs.path : "/",
+            maxAge: typeof attrs["max-age"] === "string" ? Number(attrs["max-age"]) : undefined,
+            httpOnly: attrs.httponly !== undefined,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
           });
