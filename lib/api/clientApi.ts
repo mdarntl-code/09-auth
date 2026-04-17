@@ -62,33 +62,33 @@ export const deleteNote = async (noteId: string): Promise<Note> => {
 
 // --- АВТОРИЗАЦІЯ ---
 
-export const register = async (data: RegisterData) => {
+export const register = async (data: RegisterData):Promise<User> => {
   const response = await noteInstance.post<User>('/auth/register', data);
   return response.data;
 };
 
-export const login = async (data: LoginData) => {
+export const login = async (data: LoginData):Promise<User> => {
   const response = await noteInstance.post<User>('/auth/login', data);
   return response.data;
 };
 
-export const logout = async () => {
+export const logout = async ():Promise<void> => {
   await noteInstance.post('/auth/logout');
 };
 
-export const checkSession = async () => {
-  const response = await noteInstance.get('/auth/session');
+export const checkSession = async ():Promise<User> => {
+  const response = await noteInstance.get<User>('/auth/session');
   return response.data;
 };
 
 // --- КОРИСТУВАЧ ---
 
-export const getMe = async () => {
-  const response = await noteInstance.get('/users/me');
+export const getMe = async ():Promise<User> => {
+  const response = await noteInstance.get<User>('/users/me');
   return response.data;
 };
 
-export const updateMe = async (updateData: { userName?: string; email?: string; password?: string }) => {
-  const response = await noteInstance.patch('/users/me', updateData);
+export const updateMe = async (updateData: { username?: string; email?: string; password?: string }):Promise<User> => {
+  const response = await noteInstance.patch<User>('/users/me', updateData);
   return response.data;
 };

@@ -1,43 +1,46 @@
-import css from './ProfilePage.module.css';
-import Link from 'next/link';
-import { Metadata } from 'next';
-import Image from 'next/image';
+import { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { getMe } from "@/lib/api/serverApi"; 
+import css from "./ProfilePage.module.css";
 
 export const metadata: Metadata = {
-    title: 'Profile | NoteHub',
-    description: 'View and edit your personal profile on NoteHub',
-}
+  title: "Profile | NoteHub",
+  description: "User profile information",
+};
 
-function Profile(){
-    return <>
+export default async function ProfilePage() {
+  const user = await getMe();
+
+  return (
     <main className={css.mainContent}>
-  <div className={css.profileCard}>
-      <div className={css.header}>
-	     <h1 className={css.formTitle}>Profile Page</h1>
-	     <Link href={'/profile/edit'} className={css.editProfileButton}>
-	       Edit Profile
-	     </Link>
-	   </div>
-     <div className={css.avatarWrapper}>
-      <img
-        src="https://ac.goit.global/avatar.png"
-        alt="User Avatar"
-        width={120}
-        height={120}
-        className={css.avatar}
-      />
-    </div>
-    <div className={css.profileInfo}>
-      <p>
-        Username: your_username
-      </p>
-      <p>
-        Email: your_email@example.com
-      </p>
-    </div>
-  </div>
-</main>
-    </>
-}
+      <div className={css.profileCard}>
+        <h1 className={css.title}>My Profile</h1>
 
-export default Profile;
+        <Image
+          src={user.avatar || "/default-avatar.png"}
+          alt="User Avatar"
+          width={120}
+          height={120}
+          className={css.avatar}
+          priority
+        />
+
+        <div className={css.profileInfo}>
+          <p className={css.username}>
+            <strong>Username:</strong> {user.username}
+          </p>
+          <p className={css.email}>
+            <strong>Email:</strong> {user.email}
+          </p>
+        </div>
+
+        <div className={css.actions}>
+          <Link href="/profile/edit" className={css.editButton}>
+            Edit Profile
+          </Link>
+        </div>
+      </div>
+    </main>
+  );
+}

@@ -25,7 +25,7 @@ export default function EditProfilePage() {
     setLoading(true);
 
     try {
-      const updatedUser = await updateMe({ userName: username });
+      const updatedUser = await updateMe({ username: username });
       
       setUser(updatedUser);
       
