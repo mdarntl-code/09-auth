@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { parse } from "cookie";
-import axios from "axios";
+import { checkSession } from "@/lib/api/serverApi";
 
 const PRIVATE_ROUTES = ["/profile", "/notes"];
 const AUTH_ROUTES = ["/sign-in", "/sign-up"];
@@ -19,9 +19,7 @@ export async function proxy(request: NextRequest) {
 
   if (!accessToken && refreshToken) {
     try {
-      const response = await axios.get(`${API_URL}/api/auth/session`, {
-        headers: { Cookie: `refreshToken=${refreshToken}` },
-      });
+      const response = await checkSession();
 
       const setCookie = response.headers["set-cookie"];
 

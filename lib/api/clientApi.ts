@@ -88,7 +88,9 @@ export const getMe = async ():Promise<User> => {
   return response.data;
 };
 
-export const updateMe = async (updateData: { username?: string; email?: string; password?: string }):Promise<User> => {
+export const updateMe = async (updateData: { 
+  username?: string 
+}): Promise<User> => {
   const response = await noteInstance.patch<User>('/users/me', updateData);
   return response.data;
 };
