@@ -5,7 +5,6 @@ import { checkSession } from "@/lib/api/serverApi";
 
 const PRIVATE_ROUTES = ["/profile", "/notes"];
 const AUTH_ROUTES = ["/sign-in", "/sign-up"];
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -20,21 +19,27 @@ export async function proxy(request: NextRequest) {
   if (!accessToken && refreshToken) {
     try {
       const response = await checkSession();
+      const setCookieHeader = response.headers["set-cookie"];
 
-      const setCookie = response.headers["set-cookie"];
-
-      if (setCookie) {
+      if (setCookieHeader) {
         const res = isAuthRoute 
           ? NextResponse.redirect(new URL("/", request.url))
           : NextResponse.next();
 
-        setCookie.forEach((cookieString) => {
+        const cookieArray = Array.isArray(setCookieHeader) 
+          ? setCookieHeader 
+          : [setCookieHeader];
+
+        cookieArray.forEach((cookieString) => {
           const parsed = parse(cookieString);
           const [name, value] = Object.entries(parsed)[0];
+
           res.cookies.set(name, value as string, {
-            path: parsed.Path,
-            maxAge: Number(parsed["Max-Age"]),
-            httpOnly: true,
+            path: parsed.Path || "/",
+            maxAge: parsed["Max-Age"] ? Number(parsed["Max-Age"]) : undefined,
+            httpOnly: parsed.HttpOnly !== undefined || true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
           });
         });
         return res;
@@ -50,6 +55,10 @@ export async function proxy(request: NextRequest) {
 
   if (accessToken && isAuthRoute) {
     return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  if (!accessToken && isAuthRoute) {
+    return NextResponse.next();
   }
 
   return NextResponse.next();
